@@ -65,6 +65,11 @@ and white to black transitions. Therefore the absolute values are taken and then
 
 -> To generate a single gradients image, both x and y images from previous step is combined and returned as output image.
 
+Please note that this method worked for most of the times but failed in some instances therefore as per 
+the reviewer suggestions I used very simple lane line detection method based on combination of yellow and white colors.
+-> The B channel from LAB with thresholds between 150 and 200 for extracting Yellow lines
+-> The L channel from LUV with thresholds between 255 and 255 for extracting white lines
+
 An example of Thresholded binary output image is shown below ![Thresholded Binary Image](./output_images/step3/test1.png)
 
 More output images of this step can be found in the folder ./output_images/step3/
@@ -136,9 +141,23 @@ Output images of this step are located in the folder ./output_images/step7/
 
 #### 1. Provide a link to your final video output. Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
 
-Please refer `In [11]` & `In [12]` for code snippets for video pipeline, and the link to output video is
+Please refer `In [12]` for code snippets for video pipeline, and the link to output video is
 [video_output](./project_video_out.mp4)
 
+To keep track of whether the line was detected in previous frame, a new class 'Line'
+is added which also provides following utility functions:
+
+found_search:
+        This function is applied when the lane lines have been detected in the previous frame.
+        It uses a sliding window to search for lane pixels in close proximity (+/- 25 pixels in the x direction)
+        around the previous detected polynomial.
+        
+brute_search:
+        This function is applied in the first few frames and/or if the lane was not successfully detected
+        in the previous frame. It uses a slinding window approach to detect peaks in a histogram of the
+        binary thresholded image. Pixels in close proimity to the detected peaks are considered to belong
+        to the lane lines. If no lane pixels were detected then brute_search is performed
+        
 As shown in commented lines in code cell `In [12]`, this same video pipeline is used for both challenge and harder challenge
 video, challenge video works well for the most part and it fails at few instances. Following Discussion section 
 talks more about the scope and limitations and possible improvements.
@@ -147,7 +166,7 @@ talks more about the scope and limitations and possible improvements.
 
 #### 1. Briefly, discuss any problems/issues you faced in your implementation of this project. Where will your pipeline likely fail? What could you do to make it more robust?
 
-- Pipeline fails for the input 'harder_challenge_video.mp4'because the video has following challenging aspects:
+- Pipeline has some limitations for the input 'harder_challenge_video.mp4'because the video has following challenging aspects:
 Tight curves - Road ahead is not clearly visible because of tight curves, also the curvature of the lanes 
 is very complex to detect because the pipeline I have is too simple and needs to be robust with polyline describing
 higher order coefficients.
